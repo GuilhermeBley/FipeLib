@@ -1,4 +1,5 @@
-using FipleLib.Model;
+using FipeLib.Internal;
+using FipeLib.Model;
 using System.Text.Json;
 
 namespace FipeLib.Services;
@@ -37,12 +38,13 @@ public sealed class FipeQuery : IFipeQuery
     private class TabelaReferenciaSession
     {
         private static readonly object lockTabelaReferencia = new();
-        private static (DateTime LastRefresh, IEnumerable<TabelaReferenciaModel>? Data) _tabelaReferenciaEnumerable = (DateTime.Now, null);
+        private static (DateTime LastRefresh, OrderedEnumerableTabelaReferencia? Data) _tabelaReferenciaEnumerable = (DateTime.Now, null);
 
         public async Task<IEnumerable<TabelaReferenciaModel>> GetListTabelaReferenciaModelAsync()
         {
             if (ShouldRefreshData())
-                _tabelaReferenciaEnumerable.Data = await PrivateGetListTabelaReferenciaModel();
+                _tabelaReferenciaEnumerable.Data = new OrderedEnumerableTabelaReferencia(
+                    await PrivateGetListTabelaReferenciaModel());
 
             return _tabelaReferenciaEnumerable.Data!;
         }
@@ -61,14 +63,14 @@ public sealed class FipeQuery : IFipeQuery
 
         private async Task<IEnumerable<TabelaReferenciaModel>> PrivateGetListTabelaReferenciaModel()
         {
-            using var response = await __client.PostAsync(UrlConsultarTabelaDeReferencia, null);
+            using var response = await __client.PostAsync(UrlConsultarTabelaDeReferencia, new StringContent(string.Empty ,System.Text.Encoding.UTF8, "application/json"));
 
             if (!response.IsSuccessStatusCode)
                 throw new Exception();
 
-            using Stream stremResponse = await response.Content.ReadAsStreamAsync();
+            using var streamJson = await response.Content.ReadAsStreamAsync();
 
-            return await JsonSerializer.DeserializeAsync<IEnumerable<TabelaReferenciaModel>>(stremResponse)
+            return await JsonSerializer.DeserializeAsync<IEnumerable<TabelaReferenciaModel>>(streamJson)
                 ?? throw new ArgumentNullException($"Fail to collect {typeof(IEnumerable<TabelaReferenciaModel>).Name}.");
         }
     }

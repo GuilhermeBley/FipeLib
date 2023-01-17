@@ -1,4 +1,4 @@
-using FipleLib.Model;
+using FipeLib.Model;
 
 namespace FipeLib.Services;
 
