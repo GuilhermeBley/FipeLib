@@ -43,4 +43,7 @@ public interface IFipeQuery
     /// Get async 'marcas' with specific 'Tabela Referencia'
     /// </summary>
     IAsyncEnumerable<MarcaModel> GetMarcaAsyncEnumerable(TabelaReferenciaModel? tabelaReferenciaModel);
+    IEnumerable<ModeloModel> GetModelos(MarcaModel? tabelaReferenciaModel);
+    Task<IEnumerable<ModeloModel>> GetModelosAsync(MarcaModel? tabelaReferenciaModel);
+    IAsyncEnumerable<ModeloModel> GetModelosAsyncEnumerable(MarcaModel? tabelaReferenciaModel);
 }

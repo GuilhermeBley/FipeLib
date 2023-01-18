@@ -60,6 +60,21 @@ public sealed class FipeQuery : IFipeQuery
         return await GetAllMarcaAsync(tabelaReferenciaModel);
     }
 
+    public IEnumerable<ModeloModel> GetModelos(MarcaModel? tabelaReferenciaModel)
+    {
+        return GetModelosAsync(tabelaReferenciaModel).GetAwaiter().GetResult();
+    }
+
+    public async Task<IEnumerable<ModeloModel>> GetModelosAsync(MarcaModel? tabelaReferenciaModel)
+    {
+        return await GetModelosAsyncEnumerable(tabelaReferenciaModel).ToListAsync();
+    }
+
+    public async IAsyncEnumerable<ModeloModel> GetModelosAsyncEnumerable(MarcaModel? tabelaReferenciaModel)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<IEnumerable<MarcaModel>> GetAllMarcaAsync(TabelaReferenciaModel? tabelaReferenciaModel)
     {
         return await GetAllMarcaAsyncAsyncEnumerable(tabelaReferenciaModel).ToListAsync();
@@ -253,6 +268,19 @@ public sealed class FipeQuery : IFipeQuery
 
             return await JsonSerializer.DeserializeAsync<IEnumerable<TabelaReferenciaModel>>(streamJson)
                 ?? throw new ArgumentNullException($"Fail to collect {typeof(IEnumerable<TabelaReferenciaModel>).Name}.");
+        }
+    }
+
+    /// <summary>
+    /// Assistant return
+    /// </summary>
+    private class JsonReturnModeloModel
+    {
+        IEnumerable<ModeloModel> Modelos { get; set; }
+
+        public JsonReturnModeloModel(IEnumerable<ModeloModel> modelos)
+        {
+            Modelos = modelos;
         }
     }
 }
