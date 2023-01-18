@@ -8,6 +8,9 @@ public class MarcaModel
     [System.Text.Json.Serialization.JsonIgnore]
     public TabelaReferenciaModel? TabelaReferencia { get; internal set; }
 
+    [System.Text.Json.Serialization.JsonIgnore]
+    internal Internal.TypeMarcaEnum CodigoMarca { get; set; }
+
     public MarcaModel(string label, string value)
     {
         if (string.IsNullOrEmpty(label))

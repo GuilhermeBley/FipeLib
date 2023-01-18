@@ -9,9 +9,10 @@ namespace FipeLib.Services;
 
 public sealed class FipeQuery : IFipeQuery
 {
-    private const string UrlApi = "https://veiculos.fipe.org.br/api/veiculos";
-    private const string UrlConsultarTabelaDeReferencia = $"{UrlApi}//ConsultarTabelaDeReferencia";
-    private const string UrlConsultarMarcas = $"{UrlApi}//ConsultarMarcas";
+    private const string URL_API = "https://veiculos.fipe.org.br/api/veiculos";
+    private const string URL_CONSULTA_TABELA_REFERENCIA = $"{URL_API}//ConsultarTabelaDeReferencia";
+    private const string URL_CONSULTA_MARCAS = $"{URL_API}//ConsultarMarcas";
+    private const string URL_CONSULTA_MODELOS = $"{URL_API}//ConsultarModelos";
     private static readonly TabelaReferenciaSession _tabelaReferenciaSession = new();
     private readonly static HttpClient __client = CreateClientTabelaFipe();
     private HttpClient _client => __client;
@@ -60,19 +61,44 @@ public sealed class FipeQuery : IFipeQuery
         return await GetAllMarcaAsync(tabelaReferenciaModel);
     }
 
-    public IEnumerable<ModeloModel> GetModelos(MarcaModel? tabelaReferenciaModel)
+    public IEnumerable<ModeloModel> GetModelos(MarcaModel? marcaModel)
     {
-        return GetModelosAsync(tabelaReferenciaModel).GetAwaiter().GetResult();
+        return GetModelosAsync(marcaModel).GetAwaiter().GetResult();
     }
 
-    public async Task<IEnumerable<ModeloModel>> GetModelosAsync(MarcaModel? tabelaReferenciaModel)
+    public async Task<IEnumerable<ModeloModel>> GetModelosAsync(MarcaModel? marcaModel)
     {
-        return await GetModelosAsyncEnumerable(tabelaReferenciaModel).ToListAsync();
+        return await GetModelosAsyncEnumerable(marcaModel).ToListAsync();
     }
 
-    public async IAsyncEnumerable<ModeloModel> GetModelosAsyncEnumerable(MarcaModel? tabelaReferenciaModel)
+    public async IAsyncEnumerable<ModeloModel> GetModelosAsyncEnumerable(MarcaModel? marcaModel)
     {
-        throw new NotImplementedException();
+        await foreach (var modelo in GetAllModelos(marcaModel))
+            yield return modelo;
+    }
+
+    private async IAsyncEnumerable<ModeloModel> GetAllModelos(MarcaModel? marcaModel)
+    {
+        if (marcaModel is null)
+            yield break;
+
+        if (marcaModel.TabelaReferencia is null)
+            yield break;
+
+        using var response = await _client.PostUrlEncondedAsync(
+            URL_CONSULTA_MODELOS, 
+            ("codigoTipoVeiculo", marcaModel.CodigoMarca.ToString()),
+            ("codigoTabelaReferencia", marcaModel.TabelaReferencia.Codigo.ToString()),
+            ("codigoMarca", marcaModel.Value));
+        
+        using var streamJson = await response.Content.ReadAsStreamAsync();
+
+        await CheckAndThrowIfContainsError(response);
+
+        var modelosModels =  await JsonSerializer.DeserializeAsync<JsonReturnModeloModel>(streamJson)
+                ?? throw new ArgumentNullException($"Fail to collect {typeof(IEnumerable<ModeloModel>).Name}.");
+
+        yield return null!;
     }
 
     private async Task<IEnumerable<MarcaModel>> GetAllMarcaAsync(TabelaReferenciaModel? tabelaReferenciaModel)
@@ -103,7 +129,7 @@ public sealed class FipeQuery : IFipeQuery
 
     private async Task<IEnumerable<MarcaModel>> GetMotosMarcaAsync(TabelaReferenciaModel tabelaReferenciaModel)
     {
-        using var response = await _client.PostUrlEncondedAsync(UrlConsultarMarcas, 
+        using var response = await _client.PostUrlEncondedAsync(URL_CONSULTA_MARCAS, 
             GetFormConsultarMarcas(tabelaReferenciaModel, TypeMarcaEnum.Moto));
         
         using var streamJson = await response.Content.ReadAsStreamAsync();
@@ -116,13 +142,14 @@ public sealed class FipeQuery : IFipeQuery
         return marcasModels.Select(marcaModel => 
         {
             marcaModel.TabelaReferencia = tabelaReferenciaModel;
+            marcaModel.CodigoMarca = TypeMarcaEnum.Moto;
             return marcaModel;
         });
     }
 
     private async Task<IEnumerable<MarcaModel>> GetCarrosAndUtilitariosMarcaAsync(TabelaReferenciaModel tabelaReferenciaModel)
     {
-        using var response = await _client.PostUrlEncondedAsync(UrlConsultarMarcas, 
+        using var response = await _client.PostUrlEncondedAsync(URL_CONSULTA_MARCAS, 
             GetFormConsultarMarcas(tabelaReferenciaModel, TypeMarcaEnum.CarrosAndUtilitarios));
 
         using var streamJson = await response.Content.ReadAsStreamAsync();
@@ -135,13 +162,14 @@ public sealed class FipeQuery : IFipeQuery
         return marcasModels.Select(marcaModel => 
         {
             marcaModel.TabelaReferencia = tabelaReferenciaModel;
+            marcaModel.CodigoMarca = TypeMarcaEnum.CarrosAndUtilitarios;
             return marcaModel;
         });
     }
 
     private async Task<IEnumerable<MarcaModel>> GetCaminhoesAndMicroOnibusMarcaAsync(TabelaReferenciaModel tabelaReferenciaModel)
     {
-        using var response = await _client.PostUrlEncondedAsync(UrlConsultarMarcas, 
+        using var response = await _client.PostUrlEncondedAsync(URL_CONSULTA_MARCAS, 
             GetFormConsultarMarcas(tabelaReferenciaModel, TypeMarcaEnum.CaminhoesAndMicroOnibus));
 
         using var streamJson = await response.Content.ReadAsStreamAsync();
@@ -154,6 +182,7 @@ public sealed class FipeQuery : IFipeQuery
         return marcasModels.Select(marcaModel => 
         {
             marcaModel.TabelaReferencia = tabelaReferenciaModel;
+            marcaModel.CodigoMarca = TypeMarcaEnum.CaminhoesAndMicroOnibus;
             return marcaModel;
         });
     }
@@ -260,7 +289,7 @@ public sealed class FipeQuery : IFipeQuery
 
         private async Task<IEnumerable<TabelaReferenciaModel>> PrivateGetListTabelaReferenciaModel()
         {
-            using var response = await __client.PostAsync(UrlConsultarTabelaDeReferencia, null);
+            using var response = await __client.PostAsync(URL_CONSULTA_TABELA_REFERENCIA, null);
 
             using var streamJson = await response.Content.ReadAsStreamAsync();
 
