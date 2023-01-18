@@ -65,7 +65,7 @@ public class MarcaModelTest
     }
 
     [Fact]
-    public async Task GetMarcaAsync_GetDataAsyncEnumerable_Success()
+    public async Task GetMarcaAsyncEnumerable_GetDataAsyncEnumerable_Success()
     {
         List<Model.MarcaModel> marcas = new();
         await foreach (var model in _fipeQuery.GetMarcaAsyncEnumerable())
@@ -76,5 +76,19 @@ public class MarcaModelTest
         }
 
         Assert.NotEmpty(marcas);
+    }
+
+    [Fact]
+    public async Task GetMarcaAsync_CheckTabela_Success()
+    {
+        var marcas = await _fipeQuery.GetMarcaAsync();
+        var tabelaReferenciaExpectedToAll = marcas.Select(m => m.TabelaReferencia).FirstOrDefault();
+
+        Assert.NotNull(tabelaReferenciaExpectedToAll);
+
+        Assert.All(marcas.Select(m => m.TabelaReferencia), (currentTabelaReferencia) =>
+        {
+            Assert.Equal(tabelaReferenciaExpectedToAll, currentTabelaReferencia);
+        });
     }
 }
