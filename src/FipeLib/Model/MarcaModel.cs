@@ -10,6 +10,12 @@ public class MarcaModel
 
     public MarcaModel(string label, string value)
     {
+        if (string.IsNullOrEmpty(label))
+            throw new ArgumentNullException(nameof(label));
+            
+        if (string.IsNullOrEmpty(value))
+            throw new ArgumentNullException(nameof(value));
+
         Label = label;
         Value = value;
     }

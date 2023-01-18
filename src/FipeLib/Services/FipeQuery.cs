@@ -3,6 +3,7 @@ using FipeLib.Internal.HttpExtension;
 using FipeLib.Model;
 using FipeLib.Exceptions;
 using System.Text.Json;
+using System.Linq;
 
 namespace FipeLib.Services;
 
@@ -40,6 +41,20 @@ public sealed class FipeQuery : IFipeQuery
         return GetMarcaAsync(tabelaReferenciaModel).GetAwaiter().GetResult();
     }
 
+    
+    public async IAsyncEnumerable<MarcaModel> GetMarcaAsyncEnumerable()
+    {
+        var tabelaReferenciaModel = await GetDefaultTabelaReferencia();
+        await foreach (var marcaModel in GetMarcaAsyncEnumerable(tabelaReferenciaModel))
+            yield return marcaModel;
+    }
+
+    public async IAsyncEnumerable<MarcaModel> GetMarcaAsyncEnumerable(TabelaReferenciaModel? tabelaReferenciaModel)
+    {
+        await foreach (var marcaModel in GetAllMarcaAsyncAsyncEnumerable(tabelaReferenciaModel))
+            yield return marcaModel;
+    }
+
     public async Task<IEnumerable<MarcaModel>> GetMarcaAsync(TabelaReferenciaModel? tabelaReferenciaModel)
     {
         return await GetAllMarcaAsync(tabelaReferenciaModel);
@@ -47,13 +62,28 @@ public sealed class FipeQuery : IFipeQuery
 
     private async Task<IEnumerable<MarcaModel>> GetAllMarcaAsync(TabelaReferenciaModel? tabelaReferenciaModel)
     {
+        return await GetAllMarcaAsyncAsyncEnumerable(tabelaReferenciaModel).ToListAsync();
+    }
+
+    private async IAsyncEnumerable<MarcaModel> GetAllMarcaAsyncAsyncEnumerable(TabelaReferenciaModel? tabelaReferenciaModel)
+    {
         if (tabelaReferenciaModel is null)
-            return Enumerable.Empty<MarcaModel>();
+            yield break;
         
-        return 
-            (await GetCarrosAndUtilitariosMarcaAsync(tabelaReferenciaModel))
-            .Concat(await GetCaminhoesAndMicroOnibusMarcaAsync(tabelaReferenciaModel))
-            .Concat(await GetMotosMarcaAsync(tabelaReferenciaModel));
+        foreach (var marcaCarroAndUtilitario in await GetCarrosAndUtilitariosMarcaAsync(tabelaReferenciaModel))
+        {
+            yield return marcaCarroAndUtilitario;
+        }
+        
+        foreach (var marcaCaminhaoAndMicroOnibus in await GetCaminhoesAndMicroOnibusMarcaAsync(tabelaReferenciaModel))
+        {
+            yield return marcaCaminhaoAndMicroOnibus;
+        }
+        
+        foreach (var marcaMotos in await GetMotosMarcaAsync(tabelaReferenciaModel))
+        {
+            yield return marcaMotos;
+        }
     }
 
     private async Task<IEnumerable<MarcaModel>> GetMotosMarcaAsync(TabelaReferenciaModel tabelaReferenciaModel)
@@ -174,14 +204,13 @@ public sealed class FipeQuery : IFipeQuery
     /// </summary>
     private class TabelaReferenciaSession
     {
-        private static readonly object lockTabelaReferencia = new();
+        private static readonly SemaphoreSlim _semaphoreSlim = new(1,1);
         private static (DateTime LastRefresh, OrderedEnumerableTabelaReferencia? Data) _tabelaReferenciaEnumerable = (DateTime.Now, null);
 
         public async Task<IEnumerable<TabelaReferenciaModel>> GetListTabelaReferenciaModelAsync()
         {
             if (ShouldRefreshData())
-                _tabelaReferenciaEnumerable = (DateTime.Now, 
-                    new OrderedEnumerableTabelaReferencia(await PrivateGetListTabelaReferenciaModel()));
+                await UpdateWithSemaphore();
 
             return _tabelaReferenciaEnumerable.Data!;
         }
@@ -196,6 +225,22 @@ public sealed class FipeQuery : IFipeQuery
                 return true;
 
             return false;
+        }
+
+        private async Task UpdateWithSemaphore(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                await _semaphoreSlim.WaitAsync(cancellationToken);
+
+                if (ShouldRefreshData())
+                    _tabelaReferenciaEnumerable = (DateTime.Now, 
+                        new OrderedEnumerableTabelaReferencia(await PrivateGetListTabelaReferenciaModel()));
+            }
+            finally
+            {
+                _semaphoreSlim.Release();
+            }
         }
 
         private async Task<IEnumerable<TabelaReferenciaModel>> PrivateGetListTabelaReferenciaModel()
