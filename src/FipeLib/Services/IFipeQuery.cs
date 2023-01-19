@@ -46,4 +46,7 @@ public interface IFipeQuery
     IEnumerable<ModeloModel> GetModelos(MarcaModel? marcaModel);
     Task<IEnumerable<ModeloModel>> GetModelosAsync(MarcaModel? marcaModel);
     IAsyncEnumerable<ModeloModel> GetModelosAsyncEnumerable(MarcaModel? marcaModel);
+    IEnumerable<AnoModel> GetAnosByModelo(ModeloModel? modeloModel);
+    Task<IEnumerable<AnoModel>> GetAnosByModeloAsync(ModeloModel? modeloModel);
+    IAsyncEnumerable<AnoModel> GetAnosByModeloAsyncEnumerable(ModeloModel? modeloModel);
 }
