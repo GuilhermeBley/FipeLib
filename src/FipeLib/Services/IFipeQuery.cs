@@ -17,32 +17,32 @@ public interface IFipeQuery
     /// <summary>
     /// Get 'marcas' in current date of 'Tabela Referencia'
     /// </summary>
-    IEnumerable<MarcaModel> GetMarca();
+    IEnumerable<MarcaModel> GetMarcas();
 
     /// <summary>
     /// Get async 'marcas' in current date of 'Tabela Referencia'
     /// </summary>
-    Task<IEnumerable<MarcaModel>> GetMarcaAsync();
+    Task<IEnumerable<MarcaModel>> GetMarcasAsync();
 
     /// <summary>
     /// Get 'marcas' with specific 'Tabela Referencia'
     /// </summary>
-    IEnumerable<MarcaModel> GetMarca(TabelaReferenciaModel? tabelaReferenciaModel);
+    IEnumerable<MarcaModel> GetMarcas(TabelaReferenciaModel? tabelaReferenciaModel);
     
     /// <summary>
     /// Get async 'marcas' with specific 'Tabela Referencia'
     /// </summary>
-    Task<IEnumerable<MarcaModel>> GetMarcaAsync(TabelaReferenciaModel? tabelaReferenciaModel);
+    Task<IEnumerable<MarcaModel>> GetMarcasAsync(TabelaReferenciaModel? tabelaReferenciaModel);
 
     /// <summary>
     /// Get async 'marcas' in current date of 'Tabela Referencia'
     /// </summary>
-    IAsyncEnumerable<MarcaModel> GetMarcaAsyncEnumerable();
+    IAsyncEnumerable<MarcaModel> GetMarcasAsyncEnumerable();
     
     /// <summary>
     /// Get async 'marcas' with specific 'Tabela Referencia'
     /// </summary>
-    IAsyncEnumerable<MarcaModel> GetMarcaAsyncEnumerable(TabelaReferenciaModel? tabelaReferenciaModel);
+    IAsyncEnumerable<MarcaModel> GetMarcasAsyncEnumerable(TabelaReferenciaModel? tabelaReferenciaModel);
     IEnumerable<ModeloModel> GetModelos(MarcaModel? marcaModel);
     Task<IEnumerable<ModeloModel>> GetModelosAsync(MarcaModel? marcaModel);
     IAsyncEnumerable<ModeloModel> GetModelosAsyncEnumerable(MarcaModel? marcaModel);

@@ -26,37 +26,37 @@ public sealed class FipeQuery : IFipeQuery
     {
         return await _tabelaReferenciaSession.GetListTabelaReferenciaModelAsync();
     }
-    public IEnumerable<MarcaModel> GetMarca()
+    public IEnumerable<MarcaModel> GetMarcas()
     {
-        return GetMarcaAsync().GetAwaiter().GetResult();
+        return GetMarcasAsync().GetAwaiter().GetResult();
     }
 
-    public async Task<IEnumerable<MarcaModel>> GetMarcaAsync()
+    public async Task<IEnumerable<MarcaModel>> GetMarcasAsync()
     {
-        return await GetMarcaAsync(
+        return await GetMarcasAsync(
             await GetDefaultTabelaReferencia());
     }
 
-    public IEnumerable<MarcaModel> GetMarca(TabelaReferenciaModel? tabelaReferenciaModel)
+    public IEnumerable<MarcaModel> GetMarcas(TabelaReferenciaModel? tabelaReferenciaModel)
     {
-        return GetMarcaAsync(tabelaReferenciaModel).GetAwaiter().GetResult();
+        return GetMarcasAsync(tabelaReferenciaModel).GetAwaiter().GetResult();
     }
 
     
-    public async IAsyncEnumerable<MarcaModel> GetMarcaAsyncEnumerable()
+    public async IAsyncEnumerable<MarcaModel> GetMarcasAsyncEnumerable()
     {
         var tabelaReferenciaModel = await GetDefaultTabelaReferencia();
-        await foreach (var marcaModel in GetMarcaAsyncEnumerable(tabelaReferenciaModel))
+        await foreach (var marcaModel in GetMarcasAsyncEnumerable(tabelaReferenciaModel))
             yield return marcaModel;
     }
 
-    public async IAsyncEnumerable<MarcaModel> GetMarcaAsyncEnumerable(TabelaReferenciaModel? tabelaReferenciaModel)
+    public async IAsyncEnumerable<MarcaModel> GetMarcasAsyncEnumerable(TabelaReferenciaModel? tabelaReferenciaModel)
     {
         await foreach (var marcaModel in GetAllMarcaAsyncAsyncEnumerable(tabelaReferenciaModel))
             yield return marcaModel;
     }
 
-    public async Task<IEnumerable<MarcaModel>> GetMarcaAsync(TabelaReferenciaModel? tabelaReferenciaModel)
+    public async Task<IEnumerable<MarcaModel>> GetMarcasAsync(TabelaReferenciaModel? tabelaReferenciaModel)
     {
         return await GetAllMarcaAsync(tabelaReferenciaModel);
     }
