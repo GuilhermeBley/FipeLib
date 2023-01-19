@@ -13,6 +13,7 @@ public sealed class FipeQuery : IFipeQuery
     private const string URL_CONSULTA_TABELA_REFERENCIA = $"{URL_API}//ConsultarTabelaDeReferencia";
     private const string URL_CONSULTA_MARCAS = $"{URL_API}//ConsultarMarcas";
     private const string URL_CONSULTA_MODELOS = $"{URL_API}//ConsultarModelos";
+    private const string URL_CONSULTA_ANOS = $"{URL_API}//ConsultarAnoModelo";
     private static readonly TabelaReferenciaSession _tabelaReferenciaSession = new();
     private readonly static HttpClient __client = CreateClientTabelaFipe();
     private HttpClient _client => __client;
@@ -76,6 +77,59 @@ public sealed class FipeQuery : IFipeQuery
         await foreach (var modelo in GetAllModelos(marcaModel))
             yield return modelo;
     }
+    
+    public IEnumerable<AnoModel> GetAnosByModelo(ModeloModel? modeloModel)
+    {
+        return GetAnosByModeloAsync(modeloModel).GetAwaiter().GetResult();
+    }
+
+    public async Task<IEnumerable<AnoModel>> GetAnosByModeloAsync(ModeloModel? modeloModel)
+    {
+        return await GetAnosByModeloAsyncEnumerable(modeloModel).ToListAsync();
+    }
+
+    public async IAsyncEnumerable<AnoModel> GetAnosByModeloAsyncEnumerable(ModeloModel? modeloModel)
+    {
+        await foreach (var anoModel in GetAllAnosByModeloAsyncEnumerable(modeloModel))
+        {
+            yield return anoModel;
+        }
+    }
+
+    private async IAsyncEnumerable<AnoModel> GetAllAnosByModeloAsyncEnumerable(ModeloModel? modeloModel)
+    {
+        if (modeloModel is null)
+            yield break;
+
+        if (modeloModel.Marca is null)
+            yield break;
+
+        if (modeloModel.Marca.TabelaReferencia is null)
+            yield break;
+
+        var marcaModel = modeloModel.Marca;
+
+        using var response = await _client.PostUrlEncondedAsync(
+            URL_CONSULTA_ANOS, 
+            ("codigoTipoVeiculo", ((sbyte)marcaModel.CodigoMarca).ToString()),
+            ("codigoTabelaReferencia", marcaModel.TabelaReferencia.Codigo.ToString()),
+            ("codigoMarca", marcaModel.Value),
+            ("codigoModelo", modeloModel.Value.ToString()));
+        
+        using var streamJson = await response.Content.ReadAsStreamAsync();
+
+        await CheckAndThrowIfContainsError(response);
+
+        var anosModels =  await JsonSerializer.DeserializeAsync<IEnumerable<AnoModel>>(streamJson)
+                ?? throw new ArgumentNullException($"Fail to collect {typeof(IEnumerable<AnoModel>).Name}.");
+
+        modeloModel.AvailableYears = anosModels;
+
+        foreach (var anoModel in anosModels)
+        {
+            yield return anoModel;
+        }
+    }
 
     private async IAsyncEnumerable<ModeloModel> GetAllModelos(MarcaModel? marcaModel)
     {
@@ -94,7 +148,6 @@ public sealed class FipeQuery : IFipeQuery
         using var streamJson = await response.Content.ReadAsStreamAsync();
 
         await CheckAndThrowIfContainsError(response);
-        var s = await response.Content.ReadAsStringAsync();
 
         var internalModelosModels =  await JsonSerializer.DeserializeAsync<JsonReturnModeloModel>(streamJson)
                 ?? throw new ArgumentNullException($"Fail to collect {typeof(IEnumerable<ModeloModel>).Name}.");
