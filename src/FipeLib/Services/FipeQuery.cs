@@ -124,7 +124,23 @@ public sealed class FipeQuery : IFipeQuery
             modeloModel.Marca.TabelaReferencia is null)
             return null;
 
-        throw new NotImplementedException();
+        var marcaModel = modeloModel.Marca;
+
+        using var response = await _client.PostUrlEncondedAsync(
+            URL_CONSULTA_ANOS, 
+            ("codigoTipoVeiculo", ((sbyte)marcaModel.CodigoMarca).ToString()),
+            ("codigoTabelaReferencia", marcaModel.TabelaReferencia.Codigo.ToString()),
+            ("codigoMarca", marcaModel.Value),
+            ("codigoModelo", modeloModel.Value.ToString()),
+            ("anoModelo", anoModel.Year.ToString()),
+            ("codigoTipoCombustivel", anoModel.TipoCombustivel.ToString()));
+        
+        using var streamJson = await response.Content.ReadAsStreamAsync();
+
+        await CheckAndThrowIfContainsError(response);
+
+        return await JsonSerializer.DeserializeAsync<VehicleModel>(streamJson)
+                ?? throw new ArgumentNullException($"Fail to collect {nameof(VehicleModel)}.");
     }
 
     private async IAsyncEnumerable<AnoModel> GetAllAnosByModeloAsyncEnumerable(ModeloModel? modeloModel)
