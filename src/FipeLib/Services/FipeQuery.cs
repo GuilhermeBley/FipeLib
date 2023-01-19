@@ -95,24 +95,35 @@ public sealed class FipeQuery : IFipeQuery
             yield return anoModel;
         }
     }
-    
+
     public VehicleModel? GetVehicleOrDefault(ModeloModel? modeloModel, int year)
     {
-        throw new NotImplementedException();
+        return GetVehicleOrDefaultAsync(modeloModel, year).GetAwaiter().GetResult();
     }
 
-    public Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, int year)
+    public async Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, int year)
     {
-        throw new NotImplementedException();
+        return await TryGetVehicle(modeloModel, GetCorrectYearFromModeloOrDefault(modeloModel, year));
     }
 
-    public VehicleModel? GetVehicleOrDefault(ModeloModel? modeloModel, AnoModel anoModel)
+    public VehicleModel? GetVehicleOrDefault(ModeloModel? modeloModel, AnoModel? anoModel)
     {
-        throw new NotImplementedException();
+        return GetVehicleOrDefaultAsync(modeloModel, anoModel).GetAwaiter().GetResult();
     }
 
-    public Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, AnoModel anoModel)
+    public async Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, AnoModel? anoModel)
     {
+        return await TryGetVehicle(modeloModel, GetCorrectYearFromModeloOrDefault(modeloModel, anoModel));
+    }
+
+    private async Task<VehicleModel?> TryGetVehicle(ModeloModel? modeloModel, AnoModel? anoModel)
+    {
+        if (modeloModel is null ||
+            anoModel is null ||
+            modeloModel.Marca is null ||
+            modeloModel.Marca.TabelaReferencia is null)
+            return null;
+
         throw new NotImplementedException();
     }
 
@@ -320,6 +331,30 @@ public sealed class FipeQuery : IFipeQuery
         client.DefaultRequestHeaders.Host = "veiculos.fipe.org.br";
 
         return client;
+    }
+
+    private AnoModel? GetCorrectYearFromModeloOrDefault(ModeloModel? modelo, AnoModel? anoModel)
+    {
+        if (anoModel is null)
+            return null;
+        return GetCorrectYearFromModeloOrDefault(modelo, anoModel.Year);
+    }
+
+    private AnoModel? GetCorrectYearFromModeloOrDefault(ModeloModel? modelo, int year)
+    {
+        if (year < AnoModel.MIN_YEAR || year > AnoModel.ZERO_KM_YEAR)
+            throw new ArgumentNullException(nameof(modelo));
+
+        if (modelo is null || modelo.AvailableYears is null)
+            throw new ArgumentNullException(nameof(modelo));
+
+        var foundValues = modelo.AvailableYears.Where(
+            anoModel => anoModel.Value.StartsWith(year.ToString())).ToList();
+
+        if (foundValues.Count != 1)
+            return null;
+
+        return foundValues.First();
     }
 
     /// <summary>

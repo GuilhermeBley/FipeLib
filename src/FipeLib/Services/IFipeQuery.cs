@@ -51,6 +51,6 @@ public interface IFipeQuery
     IAsyncEnumerable<AnoModel> GetAnosByModeloAsyncEnumerable(ModeloModel? modeloModel);
     VehicleModel? GetVehicleOrDefault(ModeloModel? modeloModel, int year);
     Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, int year);
-    VehicleModel? GetVehicleOrDefault(ModeloModel? modeloModel, AnoModel anoModel);
-    Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, AnoModel anoModel);
+    VehicleModel? GetVehicleOrDefault(ModeloModel? modeloModel, AnoModel? anoModel);
+    Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, AnoModel? anoModel);
 }

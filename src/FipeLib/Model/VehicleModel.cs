@@ -5,14 +5,14 @@ namespace FipeLib.Model;
 public class VehicleModel
 {
     /// <summary>
-    /// Zero km
+    /// Vehicle Zero km
     /// </summary>
-    public const int ZERO_KM_YEAR = 32000;
+    public const int ZERO_KM_YEAR = AnoModel.ZERO_KM_YEAR;
 
     /// <summary>
-    /// Ano mínimo
+    /// Min year vehicle
     /// </summary>
-    public const int MIN_YEAR = 1900;
+    public const int MIN_YEAR = AnoModel.MIN_YEAR;
 
     [JsonPropertyName("Valor")]
     public string Valor { get; }
