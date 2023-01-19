@@ -1,11 +1,9 @@
 using FipeLib.Services;
 
-namespace FipeLib.Tests;
+namespace FipeLib.Tests.ModelsTests;
 
-public class MarcaModelTest
+public class MarcaModelTest : ModelTestBase
 {
-    private readonly IFipeQuery _fipeQuery = new FipeQuery();
-
     [Fact]
     public async Task GetMarcaAsync_GetData_Success()
     {

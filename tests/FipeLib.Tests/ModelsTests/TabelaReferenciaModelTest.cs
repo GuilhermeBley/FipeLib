@@ -1,11 +1,9 @@
 using FipeLib.Services;
 
-namespace FipeLib.Tests;
+namespace FipeLib.Tests.ModelsTests;
 
-public class TabelaReferenciaModelTest
+public class TabelaReferenciaModelTest : ModelTestBase
 {
-    private readonly IFipeQuery _fipeQuery = new FipeQuery();
-
     [Fact]
     public async Task GetAllTabelaReferenciaAsync_GetData_Success()
     {

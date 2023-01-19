@@ -1,11 +1,9 @@
 using FipeLib.Services;
 
-namespace FipeLib.Tests;
+namespace FipeLib.Tests.ModelsTests;
 
-public class ModeloModelTest
+public class ModeloModelTest : ModelTestBase
 {
-    private readonly IFipeQuery _fipeQuery = new FipeQuery();
-
     [Fact]
     public async Task GetModelosAsync_GetData_Success()
     {
@@ -67,12 +65,5 @@ public class ModeloModelTest
         Model.MarcaModel? invalidMarcaModel = null;
 
         Assert.Empty(await _fipeQuery.GetModelosAsync(invalidMarcaModel));
-    }
-
-    private async Task<Model.MarcaModel> GetRandomValidMarca()
-    {
-        var marcas = await _fipeQuery.GetMarcasAsync();
-        int randomIndex = new Random().Next(0, marcas.Count()-1);
-        return marcas.ElementAt(randomIndex);
     }
 }
