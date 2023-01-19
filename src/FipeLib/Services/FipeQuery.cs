@@ -98,7 +98,8 @@ public sealed class FipeQuery : IFipeQuery
         var modelosModels =  await JsonSerializer.DeserializeAsync<JsonReturnModeloModel>(streamJson)
                 ?? throw new ArgumentNullException($"Fail to collect {typeof(IEnumerable<ModeloModel>).Name}.");
 
-        yield return null!;
+        foreach (var modelo in modelosModels.Modelos)
+            yield return modelo;
     }
 
     private async Task<IEnumerable<MarcaModel>> GetAllMarcaAsync(TabelaReferenciaModel? tabelaReferenciaModel)
@@ -305,7 +306,7 @@ public sealed class FipeQuery : IFipeQuery
     /// </summary>
     private class JsonReturnModeloModel
     {
-        IEnumerable<ModeloModel> Modelos { get; set; }
+        public IEnumerable<ModeloModel> Modelos { get; set; }
 
         public JsonReturnModeloModel(IEnumerable<ModeloModel> modelos)
         {
