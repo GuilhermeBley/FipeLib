@@ -136,6 +136,7 @@ public sealed class FipeQuery : IFipeQuery
             ("codigoTipoCombustivel", anoModel.TipoCombustivel.ToString()));
         
         using var streamJson = await response.Content.ReadAsStreamAsync();
+        var str = await response.Content.ReadAsStringAsync();
 
         await CheckAndThrowIfContainsError(response);
 

@@ -6,6 +6,14 @@ public abstract class ModelTestBase
 {
     protected IFipeQuery _fipeQuery = new FipeQuery();
 
+    protected async Task<(Model.ModeloModel Modelo, Model.AnoModel Ano)> GetRandomValidModeloAndYear()
+    {
+        var ramdomModel = await GetRandomValidModelo();
+        var yearsModels = await _fipeQuery.GetAnosByModeloAsync(ramdomModel);
+        int randomIndex = new Random().Next(0, yearsModels.Count()-1);
+        return (ramdomModel, yearsModels.ElementAt(randomIndex));
+    }
+
     protected async Task<Model.ModeloModel> GetRandomValidModelo()
     {
         var randomMarca = await GetRandomValidMarca();
