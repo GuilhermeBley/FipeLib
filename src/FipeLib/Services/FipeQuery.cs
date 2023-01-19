@@ -95,6 +95,26 @@ public sealed class FipeQuery : IFipeQuery
             yield return anoModel;
         }
     }
+    
+    public VehicleModel? GetVehicleOrDefault(ModeloModel? modeloModel, int year)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, int year)
+    {
+        throw new NotImplementedException();
+    }
+
+    public VehicleModel? GetVehicleOrDefault(ModeloModel? modeloModel, AnoModel anoModel)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, AnoModel anoModel)
+    {
+        throw new NotImplementedException();
+    }
 
     private async IAsyncEnumerable<AnoModel> GetAllAnosByModeloAsyncEnumerable(ModeloModel? modeloModel)
     {
