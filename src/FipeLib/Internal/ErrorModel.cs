@@ -14,7 +14,7 @@ internal class ErrorModel
     {
         if (string.IsNullOrEmpty(codigo))
             throw new ArgumentNullException(nameof(codigo));
-        
+
         if (string.IsNullOrEmpty(erro))
             throw new ArgumentNullException(nameof(erro));
 

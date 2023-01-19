@@ -6,7 +6,7 @@ public class MarcaModel
     public string Value { get; } = string.Empty;
 
     [System.Text.Json.Serialization.JsonIgnore]
-    public TabelaReferenciaModel? TabelaReferencia { get; internal set; }
+    public TabelaReferenciaModel? TabelaReferencia { get; set; }
 
     [System.Text.Json.Serialization.JsonIgnore]
     internal Internal.TypeMarcaEnum CodigoMarca { get; set; }

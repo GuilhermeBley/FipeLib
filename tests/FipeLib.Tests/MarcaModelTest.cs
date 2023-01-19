@@ -91,4 +91,13 @@ public class MarcaModelTest
             Assert.Equal(tabelaReferenciaExpectedToAll, currentTabelaReferencia);
         });
     }
+
+    [Fact]
+    public async Task GetMarcaAsync_GetErrorWithInvalidTabelaReferencia_Failed()
+    {
+        var invalidTabelaReferencia = new Model.TabelaReferenciaModel(-1, "Invalid 'mes'");
+
+        await Assert.ThrowsAnyAsync<Exceptions.FipeException>(
+            () => _fipeQuery.GetMarcaAsync(invalidTabelaReferencia));
+    }
 }
