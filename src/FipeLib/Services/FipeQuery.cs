@@ -3,6 +3,7 @@ using FipeLib.Internal.HttpExtension;
 using FipeLib.Model;
 using FipeLib.Exceptions;
 using System.Text.Json;
+using System.Linq.Expressions;
 
 namespace FipeLib.Services;
 
@@ -114,6 +115,93 @@ public sealed class FipeQuery : IFipeQuery
     public async Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, AnoModel? anoModel)
     {
         return await TryGetVehicle(modeloModel, GetCorrectYearFromModeloOrDefault(modeloModel, anoModel));
+    }
+
+    public async IAsyncEnumerable<VehicleModel> GetVehiclesAsyncEnumerable(
+        Expression<Func<TabelaReferenciaModel, bool>>? whereTabelaReferenciaModel = null, 
+        Expression<Func<MarcaModel, bool>>? whereMarcaModel = null, 
+        Expression<Func<ModeloModel, bool>>? whereModeloModel = null, 
+        Expression<Func<AnoModel, bool>>? whereAnoModel = null)
+    {
+        await foreach (var vehicleModel in GetAllVehiclesWithExpressions(whereTabelaReferenciaModel, 
+            whereMarcaModel, whereModeloModel, whereAnoModel))
+            yield return vehicleModel;
+    }
+
+    public async IAsyncEnumerable<VehicleModel> GetVehiclesAsyncEnumerable(
+        Expression<Func<TabelaReferenciaModel, bool>>? whereTabelaReferenciaModel = null, 
+        Expression<Func<MarcaModel, bool>>? whereMarcaModel = null, 
+        Expression<Func<ModeloModel, bool>>? whereModeloModel = null, 
+        Expression<Func<int, bool>>? whereAnoModel = null)
+    {
+        await foreach (var vehicleModel in GetAllVehiclesWithExpressions(whereTabelaReferenciaModel, 
+            whereMarcaModel, whereModeloModel, ParseAnoModelExpression(whereAnoModel)))
+            yield return vehicleModel;
+    }
+
+    public async IAsyncEnumerable<VehicleModel> GetVehiclesWithDefaultTableAsyncEnumerable(
+        Expression<Func<MarcaModel, bool>>? whereMarcaModel = null, 
+        Expression<Func<ModeloModel, bool>>? whereModeloModel = null, 
+        Expression<Func<AnoModel, bool>>? whereAnoModel = null)
+    {
+        var defaultTabelaModel = await GetDefaultTabelaReferencia();
+        await foreach (var vehicleModel in GetAllVehiclesWithExpressions(
+            (model) => model.Equals(defaultTabelaModel), 
+            whereMarcaModel, whereModeloModel, whereAnoModel))
+            yield return vehicleModel;
+    }
+
+    public async IAsyncEnumerable<VehicleModel> GetVehiclesWithDefaultTableAsyncEnumerable(
+        Expression<Func<MarcaModel, bool>>? whereMarcaModel = null, 
+        Expression<Func<ModeloModel, bool>>? whereModeloModel = null, 
+        Expression<Func<int, bool>>? whereAnoModel = null)
+    {
+        await foreach (var vehicleModel in GetVehiclesWithDefaultTableAsyncEnumerable(
+            whereMarcaModel, whereModeloModel, ParseAnoModelExpression(whereAnoModel)))
+            yield return vehicleModel;
+    }
+
+    private async IAsyncEnumerable<VehicleModel> GetAllVehiclesWithExpressions(
+        Expression<Func<TabelaReferenciaModel, bool>>? whereTabelaReferenciaModel = null, 
+        Expression<Func<MarcaModel, bool>>? whereMarcaModel = null, 
+        Expression<Func<ModeloModel, bool>>? whereModeloModel = null, 
+        Expression<Func<AnoModel, bool>>? whereAnoModel = null)
+    {
+        var tabelasReferenciasModels = await GetAllTabelaReferenciaAsync();
+
+        if (whereTabelaReferenciaModel is not null)
+            tabelasReferenciasModels = tabelasReferenciasModels.Where(whereTabelaReferenciaModel.Compile());
+        
+        foreach (var tabelaReferenciaModel in tabelasReferenciasModels)
+        {
+            var marcas = GetMarcasAsyncEnumerable(tabelaReferenciaModel);
+
+            if (whereMarcaModel is not null)
+                marcas.Where(whereMarcaModel.Compile());
+            
+            await foreach (var marca in marcas)
+            {
+                var modelos = GetModelosAsyncEnumerable(marca);
+
+                if (whereModeloModel is not null)
+                    modelos.Where(whereModeloModel.Compile());
+
+                await foreach (var modelo in modelos)
+                {
+                    var years = modelo.AvailableYears;
+
+                    if (whereAnoModel is not null)
+                        years = years.Where(whereAnoModel.Compile());
+
+                    foreach (var year in years)
+                    {
+                        var vehicle = await GetVehicleOrDefaultAsync(modelo, year);
+                        if (vehicle is not null)
+                            yield return vehicle;
+                    }
+                }
+            }
+        }
     }
 
     private async Task<VehicleModel?> TryGetVehicle(ModeloModel? modeloModel, AnoModel? anoModel)
@@ -418,6 +506,17 @@ public sealed class FipeQuery : IFipeQuery
             return null;
 
         return foundValues.First();
+    }
+
+    private Expression<Func<AnoModel, bool>>? ParseAnoModelExpression (in Expression<Func<int, bool>>? exAnoModel)
+    {
+        if (exAnoModel is null)
+            return null;
+        
+        Expression<Func<AnoModel, bool>>? whereObjAnoModel = null;        
+        var functionWhere = exAnoModel.Compile();
+        whereObjAnoModel = (anoModel) => functionWhere(anoModel.Year);
+        return whereObjAnoModel;
     }
 
     /// <summary>
