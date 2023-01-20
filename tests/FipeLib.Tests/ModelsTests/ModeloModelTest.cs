@@ -44,7 +44,8 @@ public class ModeloModelTest : ModelTestBase
     public async Task GetModelosAsync_GetErrorWithInvalidMarca_Failed()
     {
         var invalidMarcaModel = new Model.MarcaModel("Invalid Label", "Invalid Value.");
-        invalidMarcaModel.TabelaReferencia = new Model.TabelaReferenciaModel(-1, "Invalid mes");
+        Utils.ReflectionUtils.SetPrivatePropertyValue(invalidMarcaModel, nameof(Model.MarcaModel.TabelaReferencia), 
+            new Model.TabelaReferenciaModel(-1, "Invalid 'mes'"));
 
         await Assert.ThrowsAnyAsync<Exceptions.FipeException>(
             () => _fipeQuery.GetModelosAsync(invalidMarcaModel));
@@ -53,10 +54,7 @@ public class ModeloModelTest : ModelTestBase
     [Fact]
     public async Task GetModelosAsync_GetEmptyModelosWithNullTabelaReferencia_Success()
     {
-        var invalidMarcaModel = new Model.MarcaModel("Invalid Label", "Invalid Value.");
-        invalidMarcaModel.TabelaReferencia = null;
-
-        Assert.Empty(await _fipeQuery.GetModelosAsync(invalidMarcaModel));
+        Assert.Empty(await _fipeQuery.GetModelosAsync(null));
     }
 
     [Fact]

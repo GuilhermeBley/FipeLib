@@ -8,7 +8,7 @@ public class ModeloModel
     public int Value { get; }
 
     [System.Text.Json.Serialization.JsonIgnore]
-    public MarcaModel? Marca { get; set; }
+    public MarcaModel? Marca { get; internal set; }
 
     [System.Text.Json.Serialization.JsonIgnore]
     internal IEnumerable<AnoModel> AvailableYears { get; set; } = Enumerable.Empty<AnoModel>();
