@@ -3,7 +3,6 @@ using FipeLib.Internal.HttpExtension;
 using FipeLib.Model;
 using FipeLib.Exceptions;
 using System.Text.Json;
-using System.Linq;
 
 namespace FipeLib.Services;
 
@@ -138,7 +137,10 @@ public sealed class FipeQuery : IFipeQuery
         using var streamJson = await response.Content.ReadAsStreamAsync();
         var str = await response.Content.ReadAsStringAsync();
 
-        await CheckAndThrowIfContainsError(response);
+        await CheckAndThrowFipeHttpResponseException(response);
+
+        if (await ContainsFipeException(response))
+            return null;
 
         return await JsonSerializer.DeserializeAsync<VehicleModel>(streamJson)
                 ?? throw new ArgumentNullException($"Fail to collect {nameof(VehicleModel)}.");
@@ -315,14 +317,50 @@ public sealed class FipeQuery : IFipeQuery
     /// <exception cref="FipeException"></exception>
     private static async Task CheckAndThrowIfContainsError(HttpResponseMessage response)
     {
-        if (!response.IsSuccessStatusCode)
-            throw new FipeHttpResponseException(await response.Content.ReadAsStringAsync(), response.StatusCode);
+        await CheckAndThrowFipeHttpResponseException(response);
+        await CheckAndThrowFipeException(response);
+    }
 
-        var streamResponse = await response.Content.ReadAsStreamAsync();
-        var error = await TryGetError(streamResponse);
+    private static async Task CheckAndThrowFipeHttpResponseException(HttpResponseMessage response)
+    {
+        if (ContainsFipeHttpResponseException(response))
+            throw new FipeHttpResponseException(await response.Content.ReadAsStringAsync(), response.StatusCode);
+    }
+
+    private static async Task CheckAndThrowFipeException(HttpResponseMessage response)
+    {
+        var error = await TryGetError(response);
         if (error is not null)
             throw new FipeException(error);
-        streamResponse.Position = 0;
+    }
+
+    private static bool ContainsFipeHttpResponseException(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+            return true;
+        return false;
+    }
+
+    private static async Task<bool> ContainsFipeException(HttpResponseMessage response)
+    {
+        if (await TryGetError(response) is not null)
+            return true;
+        return false;
+    }
+
+    private static async Task<ErrorModel?> TryGetError(HttpResponseMessage response)
+    {
+        System.IO.Stream? streamResponse = null;
+        try
+        {
+            streamResponse = await response.Content.ReadAsStreamAsync();
+            return await TryGetError(streamResponse);
+        }
+        finally
+        {
+            if (streamResponse is not null)
+                streamResponse.Position = 0;
+        }
     }
 
     private static async Task<ErrorModel?> TryGetError(Stream stream)
