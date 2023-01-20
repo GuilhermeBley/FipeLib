@@ -233,10 +233,13 @@ public sealed class FipeQuery : IFipeQuery
             return null;
 
         var vehicleModel = await JsonSerializer.DeserializeAsync<VehicleModel>(streamJson, 
-            new JsonSerializerOptions { IncludeFields = true })
+            new JsonSerializerOptions { IncludeFields = true,  })
             ?? throw new ArgumentNullException($"Fail to collect {nameof(VehicleModel)}.");
 
-        vehicleModel.Modelo = modeloModel;
+        if (string.IsNullOrEmpty(vehicleModel.CodigoFipe))
+            throw new ArgumentNullException(nameof(vehicleModel.CodigoFipe));
+
+        vehicleModel.ModeloVehicle = modeloModel;
 
         return vehicleModel;
     }

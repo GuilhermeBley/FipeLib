@@ -21,7 +21,7 @@ public class VehicleModelTest : ModelTestBase
             tuple.Modelo, tuple.Ano
         ) ?? throw new ArgumentNullException("vehicle");
 
-        Assert.NotNull(vehicle.Modelo);
+        Assert.NotNull(vehicle.ModeloVehicle);
     }
 
     [Fact]
@@ -83,8 +83,8 @@ public class VehicleModelTest : ModelTestBase
     {
         var vehicleModel = await GetValidVehicle();
 
-        int validModelId = vehicleModel.Modelo?.Value ?? throw new ArgumentNullException("Modelo");
-        string validMarcaId = vehicleModel.Modelo?.Marca?.Value ?? throw new ArgumentNullException("Marca");
+        int validModelId = vehicleModel.ModeloVehicle?.Value ?? throw new ArgumentNullException("Modelo");
+        string validMarcaId = vehicleModel.ModeloVehicle?.Marca?.Value ?? throw new ArgumentNullException("Marca");
         int validAnoVehicle = vehicleModel.AnoModelo;
 
         var cts = new CancellationTokenSource(3000);
