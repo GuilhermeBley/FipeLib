@@ -117,7 +117,7 @@ public sealed class FipeQuery : IFipeQuery
         return await TryGetVehicle(modeloModel, GetCorrectYearFromModeloOrDefault(modeloModel, anoModel));
     }
 
-    public async IAsyncEnumerable<VehicleModel> GetVehiclesAsyncEnumerable(
+    public async IAsyncEnumerable<VehicleModel> GetVehicles(
         Expression<Func<TabelaReferenciaModel, bool>>? whereTabelaReferenciaModel = null, 
         Expression<Func<MarcaModel, bool>>? whereMarcaModel = null, 
         Expression<Func<ModeloModel, bool>>? whereModeloModel = null, 
@@ -128,7 +128,7 @@ public sealed class FipeQuery : IFipeQuery
             yield return vehicleModel;
     }
 
-    public async IAsyncEnumerable<VehicleModel> GetVehiclesAsyncEnumerable(
+    public async IAsyncEnumerable<VehicleModel> GetVehiclesWithYear(
         Expression<Func<TabelaReferenciaModel, bool>>? whereTabelaReferenciaModel = null, 
         Expression<Func<MarcaModel, bool>>? whereMarcaModel = null, 
         Expression<Func<ModeloModel, bool>>? whereModeloModel = null, 
@@ -139,7 +139,7 @@ public sealed class FipeQuery : IFipeQuery
             yield return vehicleModel;
     }
 
-    public async IAsyncEnumerable<VehicleModel> GetVehiclesWithDefaultTableAsyncEnumerable(
+    public async IAsyncEnumerable<VehicleModel> GetVehiclesWithDefaultTable(
         Expression<Func<MarcaModel, bool>>? whereMarcaModel = null, 
         Expression<Func<ModeloModel, bool>>? whereModeloModel = null, 
         Expression<Func<AnoModel, bool>>? whereAnoModel = null)
@@ -151,12 +151,12 @@ public sealed class FipeQuery : IFipeQuery
             yield return vehicleModel;
     }
 
-    public async IAsyncEnumerable<VehicleModel> GetVehiclesWithDefaultTableAsyncEnumerable(
+    public async IAsyncEnumerable<VehicleModel> GetVehiclesWithDefaultTableAndYear(
         Expression<Func<MarcaModel, bool>>? whereMarcaModel = null, 
         Expression<Func<ModeloModel, bool>>? whereModeloModel = null, 
         Expression<Func<int, bool>>? whereAnoModel = null)
     {
-        await foreach (var vehicleModel in GetVehiclesWithDefaultTableAsyncEnumerable(
+        await foreach (var vehicleModel in GetVehiclesWithDefaultTable(
             whereMarcaModel, whereModeloModel, ParseAnoModelExpression(whereAnoModel)))
             yield return vehicleModel;
     }
@@ -177,14 +177,14 @@ public sealed class FipeQuery : IFipeQuery
             var marcas = GetMarcasAsyncEnumerable(tabelaReferenciaModel);
 
             if (whereMarcaModel is not null)
-                marcas.Where(whereMarcaModel.Compile());
+                marcas = marcas.Where(whereMarcaModel.Compile());
             
             await foreach (var marca in marcas)
             {
                 var modelos = GetModelosAsyncEnumerable(marca);
 
                 if (whereModeloModel is not null)
-                    modelos.Where(whereModeloModel.Compile());
+                    modelos = modelos.Where(whereModeloModel.Compile());
 
                 await foreach (var modelo in modelos)
                 {

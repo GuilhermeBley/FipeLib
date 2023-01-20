@@ -49,4 +49,22 @@ public class VehicleModel
 
     [JsonIgnore]
     public ModeloModel? Modelo { get; internal set; }
+
+    public VehicleModel(string valor, string marca, string nameModelo, int anoModelo, string combustivel, string codigoFipe, string mesReferencia, string autenticacao, int tipoVeiculo, string siglaCombustivel, string dataConsulta)
+    {
+        if (string.IsNullOrEmpty(CodigoFipe))
+            throw new ArgumentNullException(nameof(codigoFipe));
+
+        Valor = valor;
+        Marca = marca;
+        NameModelo = nameModelo;
+        AnoModelo = anoModelo;
+        Combustivel = combustivel;
+        CodigoFipe = codigoFipe;
+        MesReferencia = mesReferencia;
+        Autenticacao = autenticacao;
+        TipoVeiculo = tipoVeiculo;
+        SiglaCombustivel = siglaCombustivel;
+        DataConsulta = dataConsulta;
+    }
 }

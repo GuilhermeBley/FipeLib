@@ -10,6 +10,7 @@ internal class ErrorModel
     [JsonPropertyName("erro")]
     public string Erro { get; }
 
+    [System.Diagnostics.DebuggerHidden]
     public ErrorModel(string codigo, string erro)
     {
         if (string.IsNullOrEmpty(codigo))

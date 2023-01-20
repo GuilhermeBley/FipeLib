@@ -6,6 +6,12 @@ public abstract class ModelTestBase
 {
     protected IFipeQuery _fipeQuery = new FipeQuery();
 
+    protected async Task<Model.VehicleModel> GetValidVehicle()
+    {
+        var tuple = await GetRandomValidModeloAndYear();
+        return await _fipeQuery.GetVehicleOrDefaultAsync(tuple.Modelo, tuple.Ano) ?? throw new ArgumentNullException();
+    }
+
     protected async Task<(Model.ModeloModel Modelo, Model.AnoModel Ano)> GetRandomValidModeloAndYear()
     {
         var ramdomModel = await GetRandomValidModelo();

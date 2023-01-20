@@ -54,23 +54,23 @@ public interface IFipeQuery
     Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, int year);
     VehicleModel? GetVehicleOrDefault(ModeloModel? modeloModel, AnoModel? anoModel);
     Task<VehicleModel?> GetVehicleOrDefaultAsync(ModeloModel? modeloModel, AnoModel? anoModel);
-    IAsyncEnumerable<VehicleModel> GetVehiclesAsyncEnumerable(
+    IAsyncEnumerable<VehicleModel> GetVehicles(
         Expression<Func<TabelaReferenciaModel, bool>>? whereTabelaReferenciaModel = null,
         Expression<Func<MarcaModel, bool>>? whereMarcaModel = null,
         Expression<Func<ModeloModel, bool>>? whereModeloModel = null,
         Expression<Func<AnoModel, bool>>? whereAnoModel = null);
-    IAsyncEnumerable<VehicleModel> GetVehiclesAsyncEnumerable(
+    IAsyncEnumerable<VehicleModel> GetVehiclesWithYear(
         Expression<Func<TabelaReferenciaModel, bool>>? whereTabelaReferenciaModel = null,
         Expression<Func<MarcaModel, bool>>? whereMarcaModel = null,
         Expression<Func<ModeloModel, bool>>? whereModeloModel = null,
         Expression<Func<int, bool>>? whereAnoModel = null);
 
-    IAsyncEnumerable<VehicleModel> GetVehiclesWithDefaultTableAsyncEnumerable(
+    IAsyncEnumerable<VehicleModel> GetVehiclesWithDefaultTable(
         Expression<Func<MarcaModel, bool>>? whereMarcaModel = null,
         Expression<Func<ModeloModel, bool>>? whereModeloModel = null,
         Expression<Func<AnoModel, bool>>? whereAnoModel = null);
 
-    IAsyncEnumerable<VehicleModel> GetVehiclesWithDefaultTableAsyncEnumerable(
+    IAsyncEnumerable<VehicleModel> GetVehiclesWithDefaultTableAndYear(
         Expression<Func<MarcaModel, bool>>? whereMarcaModel = null,
         Expression<Func<ModeloModel, bool>>? whereModeloModel = null,
         Expression<Func<int, bool>>? whereAnoModel = null);

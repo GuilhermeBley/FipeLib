@@ -77,4 +77,23 @@ public class VehicleModelTest : ModelTestBase
         await Assert.ThrowsAnyAsync<ArgumentException>(
             () => _fipeQuery.GetVehicleOrDefaultAsync(tuple.Modelo, Model.AnoModel.ZERO_KM_YEAR+1));
     }
+
+    [Fact]
+    public async Task GetVehiclesWithDefaultTableAndYear_GetUniqueVehicle_Success()
+    {
+        var vehicleModel = await GetValidVehicle();
+
+        int validModelId = vehicleModel.Modelo?.Value ?? throw new ArgumentNullException("Modelo");
+        string validMarcaId = vehicleModel.Modelo?.Marca?.Value ?? throw new ArgumentNullException("Marca");
+        int validAnoVehicle = vehicleModel.AnoModelo;
+
+        var cts = new CancellationTokenSource(3000);
+
+        Assert.NotNull(
+            await _fipeQuery.GetVehiclesWithDefaultTableAndYear(
+                (marca) => marca.Value == validMarcaId, 
+                (modelo) => modelo.Value == validModelId,
+                (ano) => ano == validAnoVehicle)
+            .FirstOrDefaultAsync(cancellationToken: cts.Token));
+    }
 }
