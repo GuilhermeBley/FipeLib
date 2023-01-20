@@ -2,7 +2,7 @@ using FipeLib.Services;
 
 namespace FipeLib.Tests.ModelsTests;
 
-public class AnoModel : ModelTestBase
+public class AnoModelTest : ModelTestBase
 {
     [Fact]
     public async Task GetAnosByModeloAsync_GetData_Success()

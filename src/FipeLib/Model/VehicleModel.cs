@@ -15,53 +15,38 @@ public class VehicleModel
     public const int MIN_YEAR = AnoModel.MIN_YEAR;
 
     [JsonPropertyName("Valor")]
-    public string Valor { get; }
+    public string Valor { get; internal set; } = string.Empty;
 
     [JsonPropertyName("Marca")]
-    public string Marca { get; }
+    public string Marca { get; internal set; } = string.Empty;
 
     [JsonPropertyName("Modelo")]
-    public string NomeModelo { get; }
+    public string NameModelo { get; internal set; } = string.Empty;
 
     [JsonPropertyName("AnoModelo")]
-    public int AnoModelo { get; }
+    public int AnoModelo { get; internal set; }
 
     [JsonPropertyName("Combustivel")]
-    public string Combustivel { get; }
+    public string Combustivel { get; internal set; } = string.Empty;
 
     [JsonPropertyName("CodigoFipe")]
-    public string CodigoFipe { get; }
+    public string CodigoFipe { get; internal set; } = string.Empty;
 
     [JsonPropertyName("MesReferencia")]
-    public string MesReferencia { get; }
+    public string MesReferencia { get; internal set; } = string.Empty;
 
     [JsonPropertyName("Autenticacao")]
-    public string Autenticacao { get; }
+    public string Autenticacao { get; internal set; } = string.Empty;
 
     [JsonPropertyName("TipoVeiculo")]
-    public int TipoVeiculo { get; }
+    public int TipoVeiculo { get; internal set; }
 
     [JsonPropertyName("SiglaCombustivel")]
-    public string SiglaCombustivel { get; }
+    public string SiglaCombustivel { get; internal set; } = string.Empty;
 
     [JsonPropertyName("DataConsulta")]
-    public string DataConsulta { get; }
+    public string DataConsulta { get; internal set; } = string.Empty;
 
     [JsonIgnore]
-    public ModeloModel? Modelo { get; set; }
-
-    public VehicleModel(string valor, string marca, string modelo, int anoModelo, string combustivel, string codigoFipe, string mesReferencia, string autenticacao, int tipoVeiculo, string siglaCombustivel, string dataConsulta)
-    {
-        Valor = valor;
-        Marca = marca;
-        NomeModelo = modelo;
-        AnoModelo = anoModelo;
-        Combustivel = combustivel;
-        CodigoFipe = codigoFipe;
-        MesReferencia = mesReferencia;
-        Autenticacao = autenticacao;
-        TipoVeiculo = tipoVeiculo;
-        SiglaCombustivel = siglaCombustivel;
-        DataConsulta = dataConsulta;
-    }
+    public ModeloModel? Modelo { get; internal set; }
 }

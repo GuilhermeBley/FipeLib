@@ -13,6 +13,7 @@ public sealed class FipeQuery : IFipeQuery
     private const string URL_CONSULTA_MARCAS = $"{URL_API}//ConsultarMarcas";
     private const string URL_CONSULTA_MODELOS = $"{URL_API}//ConsultarModelos";
     private const string URL_CONSULTA_ANOS = $"{URL_API}//ConsultarAnoModelo";
+    private const string URL_CONSULTA_VEHICLE = $"{URL_API}//ConsultarValorComTodosParametros";
     private static readonly TabelaReferenciaSession _tabelaReferenciaSession = new();
     private readonly static HttpClient __client = CreateClientTabelaFipe();
     private HttpClient _client => __client;
@@ -126,24 +127,30 @@ public sealed class FipeQuery : IFipeQuery
         var marcaModel = modeloModel.Marca;
 
         using var response = await _client.PostUrlEncondedAsync(
-            URL_CONSULTA_ANOS, 
+            URL_CONSULTA_VEHICLE, 
             ("codigoTipoVeiculo", ((sbyte)marcaModel.CodigoMarca).ToString()),
             ("codigoTabelaReferencia", marcaModel.TabelaReferencia.Codigo.ToString()),
             ("codigoMarca", marcaModel.Value),
             ("codigoModelo", modeloModel.Value.ToString()),
             ("anoModelo", anoModel.Year.ToString()),
-            ("codigoTipoCombustivel", anoModel.TipoCombustivel.ToString()));
+            ("codigoTipoCombustivel", anoModel.TipoCombustivel.ToString()),
+            ("tipoConsulta", "tradicional"));
         
         using var streamJson = await response.Content.ReadAsStreamAsync();
-        var str = await response.Content.ReadAsStringAsync();
+        var s = await response.Content.ReadAsStringAsync();
 
         await CheckAndThrowFipeHttpResponseException(response);
 
         if (await ContainsFipeException(response))
             return null;
 
-        return await JsonSerializer.DeserializeAsync<VehicleModel>(streamJson)
-                ?? throw new ArgumentNullException($"Fail to collect {nameof(VehicleModel)}.");
+        var vehicleModel = await JsonSerializer.DeserializeAsync<VehicleModel>(streamJson, 
+            new JsonSerializerOptions { IncludeFields = true })
+            ?? throw new ArgumentNullException($"Fail to collect {nameof(VehicleModel)}.");
+
+        vehicleModel.Modelo = modeloModel;
+
+        return vehicleModel;
     }
 
     private async IAsyncEnumerable<AnoModel> GetAllAnosByModeloAsyncEnumerable(ModeloModel? modeloModel)
@@ -370,7 +377,8 @@ public sealed class FipeQuery : IFipeQuery
 
         try
         {
-            return await JsonSerializer.DeserializeAsync<ErrorModel?>(stream);
+            return await JsonSerializer.DeserializeAsync<ErrorModel?>(stream, 
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
         catch
         {
